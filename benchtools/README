@@ -1,0 +1,5 @@
+run-*:
+  Starts the program and terminates when it's finished
+
+start-*:
+  Starts the program in the background and terminates immediately

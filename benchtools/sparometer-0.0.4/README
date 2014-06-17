@@ -1,0 +1,11 @@
+
+http://sparel.teknologisk.dk/index.php?id=42 -> Download -> "DOWNLOAD kilde-kode HER"
+http://sparel.teknologisk.dk/fileadmin/user_upload/source.zip
+
+http://www.se-elforbrug.dk/ National statistik over el-forbrug
+
+Filter til at maske værdier ud der er ens.
+Eksempel:
+2008-09-10 22:06:11.334601 0014.3W
+2008-09-10 22:06:11.394610 0014.3W
+egrep "^.{33}W" oki.log | while read D T W; do [ "$W" != "$W2" ] && echo -e "$D2 $T2 $W2\n$D $T $W" ; D2=$D ; T2=$T ; W2=$W; done > oki2.log

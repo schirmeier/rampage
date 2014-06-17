@@ -1,0 +1,14 @@
+kernelpatch-rampage-final-2.6.35.diff:
+   Patch used in the PRDC 2011 RAMpage paper
+
+kernelpatch-rampage-final-additional-logging-2.6.35.diff
+   Patch to be used in addition(!) to the one above.  Adds (partially
+   disabled) logging to the kernel.
+
+kernelpatch-rampage-final-3.5.diff
+   Port of the previous two patches to Linux 3.5.
+
+kernelpatch-rampage-2.6.35-declone.diff
+kernelpatch-rampage-3.5-declone.diff
+   New patches for 2.6.35 and 3.5 that export a few more functions.  This
+   allowed us to remove a few copied kernel functions from our module.

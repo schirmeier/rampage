@@ -1,0 +1,8 @@
+Quick & Dirty testing hack based on copied rampage kernal module:
+- allocates a memory block on load (and frees it on unload)
+- attempts to claim PFNs from within that block are accepted
+- attempts to claim anything else are rejected
+- attempts to mark a page as bad are ignored
+
+Should be a safer alternative to the "real" module to test changes in the
+userspace component and works with a vanilla kernel.

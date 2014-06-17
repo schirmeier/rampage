@@ -1,0 +1,20 @@
+0.0.4	* Formatting output data first, then print
+	* Each spar-o-meter command can only be executed once in a loop
+	* Bug: fix loop=0 to loop forever
+	* Formatted verbose output
+
+0.0.3
+	* Added list of serial devices to try
+	* CFLAGS added -Wall -pedantic
+
+0.0.2	Clean up
+	* Fix failure segmentation fault on unrecognized option
+	* Restructure code
+	* ChangeLog added to dist
+
+0.0.1	Still alpha software - release often
+	* Removed '*' asterisk from output like '0001.2*W'.
+	* configure --enable-serial-device=/dev/ttyUSB0
+	* configure --enable-debug
+
+0.0.0	Initial alpha release

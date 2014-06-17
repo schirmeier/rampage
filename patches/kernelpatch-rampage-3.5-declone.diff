@@ -1,0 +1,301 @@
+diff --git a/include/linux/mm.h b/include/linux/mm.h
+index b36d08c..3bb9a31 100644
+--- a/include/linux/mm.h
++++ b/include/linux/mm.h
+@@ -455,6 +455,18 @@ void put_pages_list(struct list_head *pages);
+ void split_page(struct page *page, unsigned int order);
+ int split_free_page(struct page *page);
+ 
++/* moved from mm/internal.h for RAMPAGE -ik */
++#ifdef CONFIG_MEMORY_FAILURE
++extern bool is_free_buddy_page(struct page *page);
++#endif
++
++/* wrapper functions for RAMPAGE (original is static inline) -ik */
++unsigned long mm_page_order(struct page *page);
++void mm_rmv_page_order(struct page *page);
++void mm_buddy_expand(struct zone *zone, struct page *page,
++	int low, int high, struct free_area *area,
++        int migratetype);
++
+ /*
+  * Compound pages have a destructor function.  Provide a
+  * prototype for that function and accessor functions.
+diff --git a/kernel/resource.c b/kernel/resource.c
+index e1d2b8e..a95b195 100644
+--- a/kernel/resource.c
++++ b/kernel/resource.c
+@@ -349,6 +349,7 @@ int walk_system_ram_range(unsigned long start_pfn, unsigned long nr_pages,
+ 	}
+ 	return ret;
+ }
++EXPORT_SYMBOL_GPL(walk_system_ram_range);
+ 
+ #endif
+ 
+diff --git a/mm/internal.h b/mm/internal.h
+index 2ba87fb..8132f57 100644
+--- a/mm/internal.h
++++ b/mm/internal.h
+@@ -96,9 +96,6 @@ extern void putback_lru_page(struct page *page);
+  */
+ extern void __free_pages_bootmem(struct page *page, unsigned int order);
+ extern void prep_compound_page(struct page *page, unsigned long order);
+-#ifdef CONFIG_MEMORY_FAILURE
+-extern bool is_free_buddy_page(struct page *page);
+-#endif
+ 
+ #if defined CONFIG_COMPACTION || defined CONFIG_CMA
+ 
+diff --git a/mm/memory-failure.c b/mm/memory-failure.c
+index ab1e714..8f7d6a5 100644
+--- a/mm/memory-failure.c
++++ b/mm/memory-failure.c
+@@ -76,6 +76,9 @@ EXPORT_SYMBOL_GPL(hwpoison_filter_dev_minor);
+ EXPORT_SYMBOL_GPL(hwpoison_filter_flags_mask);
+ EXPORT_SYMBOL_GPL(hwpoison_filter_flags_value);
+ 
++EXPORT_SYMBOL_GPL(mce_bad_pages);
++EXPORT_SYMBOL_GPL(soft_offline_page);
++
+ static int hwpoison_filter_dev(struct page *p)
+ {
+ 	struct address_space *mapping;
+@@ -233,10 +236,13 @@ static int kill_proc(struct task_struct *t, unsigned long addr, int trapno,
+  */
+ void shake_page(struct page *p, int access)
+ {
++	printk(KERN_ALERT "*** shake_page %lu\n",page_to_pfn(p));
+ 	if (!PageSlab(p)) {
++		printk(KERN_ALERT "**** calling lru_add_drain_all()\n");
+ 		lru_add_drain_all();
+ 		if (PageLRU(p))
+ 			return;
++		printk(KERN_ALERT "**** calling drain_all_pages()\n");
+ 		drain_all_pages();
+ 		if (PageLRU(p) || is_free_buddy_page(p))
+ 			return;
+@@ -253,6 +259,7 @@ void shake_page(struct page *p, int access)
+ 				.gfp_mask = GFP_KERNEL,
+ 			};
+ 
++			printk(KERN_ALERT "**** shrinking slab\n");
+ 			nr = shrink_slab(&shrink, 1000, 1000);
+ 			if (page_count(p) == 1)
+ 				break;
+diff --git a/mm/memory_hotplug.c b/mm/memory_hotplug.c
+index 427bb29..b70f6bb 100644
+--- a/mm/memory_hotplug.c
++++ b/mm/memory_hotplug.c
+@@ -536,6 +536,7 @@ int __ref online_pages(unsigned long pfn, unsigned long nr_pages)
+ 
+ 	return 0;
+ }
++EXPORT_SYMBOL(online_pages);
+ #endif /* CONFIG_MEMORY_HOTPLUG_SPARSE */
+ 
+ /* we are OK calling __meminit stuff here - we have CONFIG_MEMORY_HOTPLUG */
+@@ -788,7 +789,7 @@ do_migrate_range(unsigned long start_pfn, unsigned long end_pfn)
+ 					    page_is_file_cache(page));
+ 
+ 		} else {
+-#ifdef CONFIG_DEBUG_VM
++#if 0 && defined(CONFIG_DEBUG_VM)
+ 			printk(KERN_ALERT "removing pfn %lx from LRU failed\n",
+ 			       pfn);
+ 			dump_page(page);
+@@ -996,7 +997,7 @@ int remove_memory(u64 start, u64 size)
+ 
+ 	start_pfn = PFN_DOWN(start);
+ 	end_pfn = start_pfn + PFN_DOWN(size);
+-	return offline_pages(start_pfn, end_pfn, 120 * HZ);
++	return offline_pages(start_pfn, end_pfn, 10 * HZ);
+ }
+ #else
+ int remove_memory(u64 start, u64 size)
+diff --git a/mm/migrate.c b/mm/migrate.c
+index be26d5c..c256de9 100644
+--- a/mm/migrate.c
++++ b/mm/migrate.c
+@@ -1059,6 +1059,7 @@ out:
+ 
+ 	return nr_failed + retry;
+ }
++EXPORT_SYMBOL_GPL(migrate_pages);
+ 
+ #ifdef CONFIG_NUMA
+ /*
+diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+index 4a4f921..da867f7 100644
+--- a/mm/page_alloc.c
++++ b/mm/page_alloc.c
+@@ -441,6 +441,22 @@ static inline void rmv_page_order(struct page *page)
+ 	set_page_private(page, 0);
+ }
+ 
++/* wrapper function for RAMPAGE -ik */
++void mm_rmv_page_order(struct page *page)
++{
++        rmv_page_order(page);
++}
++EXPORT_SYMBOL_GPL(mm_rmv_page_order);
++
++/* wrapper function for RAMPAGE -ik */
++/* note: moving page_order to mm.h creates a */
++/* conflict in kernel/events/internal.h */
++unsigned long mm_page_order(struct page *page)
++{
++        return page_order(page);
++}
++EXPORT_SYMBOL_GPL(mm_page_order);
++
+ /*
+  * Locate the struct page for both the matching buddy in our
+  * pair (buddy1) and the combined O(n+1) page they form (page).
+@@ -817,6 +833,15 @@ static inline void expand(struct zone *zone, struct page *page,
+ 	}
+ }
+ 
++/* wrapper function for RAMPAGE -ik */
++void mm_buddy_expand(struct zone *zone, struct page *page,
++	int low, int high, struct free_area *area,
++        int migratetype)
++{
++        expand(zone, page, low, high, area, migratetype);
++}
++EXPORT_SYMBOL_GPL(mm_buddy_expand);
++
+ /*
+  * This page is about to be returned from the page allocator
+  */
+@@ -1095,6 +1120,7 @@ retry_reserve:
+ 	trace_mm_page_alloc_zone_locked(page, order, migratetype);
+ 	return page;
+ }
++EXPORT_SYMBOL_GPL(drain_all_pages);
+ 
+ /*
+  * Obtain a specified number of elements from the buddy allocator, all under
+@@ -2695,6 +2721,7 @@ unsigned int nr_free_pagecache_pages(void)
+ {
+ 	return nr_free_zone_pages(gfp_zone(GFP_HIGHUSER_MOVABLE));
+ }
++EXPORT_SYMBOL_GPL(nr_free_pagecache_pages);
+ 
+ static inline void show_node(struct zone *zone)
+ {
+@@ -5277,6 +5304,7 @@ int percpu_pagelist_fraction_sysctl_handler(ctl_table *table, int write,
+ 	}
+ 	return 0;
+ }
++EXPORT_SYMBOL_GPL(setup_per_zone_wmarks);
+ 
+ int hashdist = HASHDIST_DEFAULT;
+ 
+@@ -5387,6 +5415,7 @@ void *__init alloc_large_system_hash(const char *tablename,
+ 
+ 	return table;
+ }
++EXPORT_SYMBOL_GPL(calculate_zone_inactive_ratio);
+ 
+ /* Return a pointer to the bitmap storing bits affecting a block of pages */
+ static inline unsigned long *get_pageblock_bitmap(struct zone *zone,
+@@ -5437,6 +5466,7 @@ unsigned long get_pageblock_flags_group(struct page *page,
+ 
+ 	return flags;
+ }
++EXPORT_SYMBOL_GPL(get_pageblock_flags_group);
+ 
+ /**
+  * set_pageblock_flags_group - Set the requested group of flags for a pageblock_nr_pages block of pages
+@@ -5914,6 +5944,7 @@ __offline_isolated_pages(unsigned long start_pfn, unsigned long end_pfn)
+ 	}
+ 	spin_unlock_irqrestore(&zone->lock, flags);
+ }
++EXPORT_SYMBOL_GPL(__offline_isolated_pages);
+ #endif
+ 
+ #ifdef CONFIG_MEMORY_FAILURE
+@@ -5935,6 +5966,7 @@ bool is_free_buddy_page(struct page *page)
+ 
+ 	return order < MAX_ORDER;
+ }
++EXPORT_SYMBOL_GPL(is_free_buddy_page);
+ #endif
+ 
+ static const struct trace_print_flags pageflag_names[] = {
+@@ -6017,3 +6049,8 @@ void dump_page(struct page *page)
+ 	dump_page_flags(page->flags);
+ 	mem_cgroup_print_bad_page(page);
+ }
++/*
++ * JeNe: Export internals
++ */
++EXPORT_SYMBOL(set_migratetype_isolate);
++EXPORT_SYMBOL(unset_migratetype_isolate);
+diff --git a/mm/page_isolation.c b/mm/page_isolation.c
+index c9f0477..36b4fa8 100644
+--- a/mm/page_isolation.c
++++ b/mm/page_isolation.c
+@@ -61,6 +61,7 @@ undo:
+ 
+ 	return -EBUSY;
+ }
++EXPORT_SYMBOL(start_isolate_page_range);
+ 
+ /*
+  * Make isolated pages available again.
+@@ -82,6 +83,8 @@ int undo_isolate_page_range(unsigned long start_pfn, unsigned long end_pfn,
+ 	}
+ 	return 0;
+ }
++EXPORT_SYMBOL(start_isolate_page_range);
++
+ /*
+  * Test all pages in the range is free(means isolated) or not.
+  * all pages in [start_pfn...end_pfn) must be in the same zone.
+@@ -140,3 +143,4 @@ int test_pages_isolated(unsigned long start_pfn, unsigned long end_pfn)
+ 	spin_unlock_irqrestore(&zone->lock, flags);
+ 	return ret ? 0 : -EBUSY;
+ }
++EXPORT_SYMBOL(test_pages_isolated);
+diff --git a/mm/swap.c b/mm/swap.c
+index 4e7e2ec..ad03076 100644
+--- a/mm/swap.c
++++ b/mm/swap.c
+@@ -592,6 +592,7 @@ int lru_add_drain_all(void)
+ {
+ 	return schedule_on_each_cpu(lru_add_drain_per_cpu);
+ }
++EXPORT_SYMBOL_GPL(lru_add_drain_all);
+ 
+ /*
+  * Batched page_cache_release().  Decrement the reference count on all the
+diff --git a/mm/vmscan.c b/mm/vmscan.c
+index 66e4310..b75067d 100644
+--- a/mm/vmscan.c
++++ b/mm/vmscan.c
+@@ -129,6 +129,7 @@ struct scan_control {
+  */
+ int vm_swappiness = 60;
+ long vm_total_pages;	/* The total number of pages which the VM controls */
++EXPORT_SYMBOL_GPL(vm_total_pages);
+ 
+ static LIST_HEAD(shrinker_list);
+ static DECLARE_RWSEM(shrinker_rwsem);
+@@ -1110,6 +1111,7 @@ int isolate_lru_page(struct page *page)
+ 	}
+ 	return ret;
+ }
++EXPORT_SYMBOL_GPL(isolate_lru_page);
+ 
+ /*
+  * Are there way too many processes in the direct reclaim path already?
+@@ -2654,6 +2656,7 @@ out:
+ 	*classzone_idx = end_zone;
+ 	return order;
+ }
++EXPORT_SYMBOL_GPL(kswapd_stop);
+ 
+ static void kswapd_try_to_sleep(pg_data_t *pgdat, int order, int classzone_idx)
+ {
