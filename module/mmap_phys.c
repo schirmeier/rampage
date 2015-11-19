@@ -52,6 +52,9 @@ void phys_mem_vma_open(struct vm_area_struct *vma)
     struct phys_mem_session* session = (struct phys_mem_session*) vma->vm_private_data;
 
     down(&session->sem);
+	if (0 == session->vmas)
+		SET_STATE(session, SESSION_STATE_MAPPED);
+
     session->vmas++;
     up(&session->sem);
 }
