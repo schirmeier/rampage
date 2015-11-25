@@ -84,7 +84,9 @@ int free_pages_via_hotplug(struct page* requested_page, unsigned int allowed_sou
     /* Avoid claiming the same area twice in a row */
     if (realaddress != last_addr) {
       last_addr = realaddress;
-      if (!hotplug_bounce(realaddress)) {
+
+	  /* we try again only when remove_memory(offline) failed */
+      if (hotplug_bounce(realaddress)) {
         if (allowed_sources & SOURCE_SHAKING) {
           /* Failed, shake page and try again */
           shake_page(requested_page, 1);
