@@ -23,13 +23,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 '''
 
-try:
-    import kpage
-    import physmem
-except ImportError as e:
-    print "Do not forget to include '{TOP_LEVEL}/physmem/interface/src/pylib/' into PYTHONPATH"
-    raise e
-
+import kpage
+import physmem
 import status
 import scheduling
 import sys
