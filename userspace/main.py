@@ -23,13 +23,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 '''
 
-try:
-    import kpage
-    import physmem
-except ImportError as e:
-    print "Do not forget to include '{TOP_LEVEL}/physmem/interface/src/pylib/' into PYTHONPATH"
-    raise e
-
+import kpage
+import physmem
 import status
 import scheduling
 import sys
@@ -358,7 +353,7 @@ if __name__ == '__main__':
                 pass4_claimers = pass4_claimers | physmem.claimer_names[word]
             else:
                 print("ERROR: Unknown claimer name >%s<" % word)
-                print("Avaiable claimers:")
+                print("Available claimers:")
                 for claimer in physmem.claimer_names.keys():
                     print "  %s" % claimer
                 exit(1)
