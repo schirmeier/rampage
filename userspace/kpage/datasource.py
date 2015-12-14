@@ -35,7 +35,7 @@ class DataSource:
      1) Create DataSource `ds`
      2) call `ds.open`
      3) call `ds.next_record`. On EOF `None`is returned. 
-        The object returned is a tupel parsed by calling `struct.unpack(...)`
+        The object returned is a tuple parsed by calling `struct.unpack(...)`
      4) close by calling `ds.close`
      
      Each record is  read by calling the `next_record` method which internally
