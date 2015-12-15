@@ -174,8 +174,8 @@ import os
 class FlagsDataSource(DataSource):
     _instances = {}
     
-    def __init__(self, type, path ):
-        DataSource.__init__(self, type, path, 'Q')
+    def __init__(self, name = "flags", path = "/proc/kpageflags" ):
+        DataSource.__init__(self, name, path, 'Q')
        
     def _parse_record(self, chunk):
         tmp =  struct.unpack(self.record_format, chunk) 
