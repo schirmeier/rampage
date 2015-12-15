@@ -198,7 +198,6 @@ class FlagsDataSource(DataSource):
 
         # seek_end does not work
                         
-        f.seek(0, os.SEEK_CUR)
         while f.read(self.record_size):
             pass
         last = f.tell()
