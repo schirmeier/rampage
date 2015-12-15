@@ -48,6 +48,10 @@ SOURCE_HOTPLUG                 = 0x00080
 SOURCE_SHAKING                 = 0x00100
 SOURCE_HOTPLUG_CLAIM           = 0x00200
 
+IOCTL_REQUEST_VERSION          = 1
+PHYS_MEM_IOC_REQUEST_PAGES     = 0x40184b00
+PHYS_MEM_IOC_MARK_FRAME_BAD    = 0x40104b01
+
 claimer_names = {"buddy"         : SOURCE_FREE_BUDDY_PAGE,
                  "hotplug-free"  : SOURCE_HOTPLUG,
                  "hotplug-claim" : SOURCE_HOTPLUG_CLAIM,
@@ -114,8 +118,8 @@ class Phys_mem_frame_status(Structure):
 class Physmem:
     def __init__(self, device):
         self.device_name = device
-        self.IOCTL_CONFIGURE = 0x40184b00
-        self.IOCTL_MARK_PFN_BAD = 0x40104b01
+        self.IOCTL_CONFIGURE = PHYS_MEM_IOC_REQUEST_PAGES
+        self.IOCTL_MARK_PFN_BAD = PHYS_MEM_IOC_MARK_FRAME_BAD
         self.f = None
 
     def __del__(self):
@@ -131,8 +135,7 @@ class Physmem:
         return self.f
 
     def mark_pfn_bad(self, bad_pfn):
-            protocol_version = 1
-            request = Mark_page_poison(protocol_version,bad_pfn)
+            request = Mark_page_poison(IOCTL_REQUEST_VERSION, bad_pfn)
             #preq =   cast(request, POINTER(Mark_page_poison))
 
             rv = fcntl.ioctl(self.dev(),self.IOCTL_MARK_PFN_BAD, request )
@@ -143,7 +146,6 @@ class Physmem:
             Expects a list of Phys_mem_frame_request instances
             """
                 # IOCTL: 
-            protocol_version = 1
             
             if    (not requested_pfns) \
                or (len(requested_pfns) == 0):
@@ -160,7 +162,7 @@ class Physmem:
                 preq =   cast(requests, POINTER(Phys_mem_frame_request))
 
             
-            arg = Phys_mem_request( protocol_version, num_requests, preq)
+            arg = Phys_mem_request(IOCTL_REQUEST_VERSION, num_requests, preq)
             rv = fcntl.ioctl(self.dev(),self.IOCTL_CONFIGURE, arg )
             return rv
         
