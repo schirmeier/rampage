@@ -71,7 +71,10 @@ class PrintSchedulerReporting:
         self.report_frame_tested(pfn)
     
     def report_bad_frame(self, pfn):
-        self.serdev.write("bad frame at pfn %08x\n" % pfn)
+        if self.serdev:
+            self.serdev.write("bad frame at pfn %08x\n" % pfn)
+        else:
+            print ("bad frame at pfn %08x\n" % pfn)
         self.report_frame_tested(pfn)
 
     def report_frame_tested(self, pfn):
