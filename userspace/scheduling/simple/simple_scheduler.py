@@ -67,8 +67,11 @@ class SimpleScheduler(object):
         
     def name(self):
         return "Simple Scheduler"
-    
-    def run(self, first_frame,last_frame, allowed_sources):
+    '''
+    the parameters 'pfns_at_once', 'time_limit', and 'full_time' is useless here, just to keep the
+    same style with other schedulers.
+    '''
+    def run(self, first_frame,last_frame, allowed_sources, pfns_at_once=0, time_limit=0, full_time=0):
         for pfn in xrange(first_frame, last_frame):
             frame_status = self._pfn_status(pfn)
             
