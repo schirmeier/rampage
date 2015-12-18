@@ -109,7 +109,7 @@ class SimpleScheduler(object):
                 with self.physmem_device.mmap(physmem.PAGE_SIZE) as map:
                     # It is better to handle bad frames after they are unmapped
                     for test in self.frame_tests:
-                        is_ok = (test.test_single(map,0) == Null)
+                        is_ok = (test.test_single(map, 0, frame.pfn*4096) == Null)
     
                 if is_ok:
                     frame_status.has_errors = 0
