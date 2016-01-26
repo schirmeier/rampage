@@ -268,8 +268,12 @@ if __name__ == '__main__':
                       help="Algorithm used to allocate memory: `blockwise`, `slow` and `frame-by-frame`."
                            "[default: %default]")
 
+    shortnames = ""
+    for cls in ScannerBaseclass.scanner_classes:
+        shortnames = shortnames + (("`%s`, ") % (cls.shortname()))
     parser.add_option("-t", "--test-algorithms",dest="algorithms_str",action="store", default="linear-cext",
-                      help="Algorithms used to test memory, ? for list [default: %default]")
+                      help="Algorithms used to test memory: "+shortnames[0:-2]+" and `?` for more detailed information about algorithms. "
+                     "[default: %default]")
 
     parser.add_option("-f", "--report-frequency",dest="report_every",
                       default=50,type=int ,
