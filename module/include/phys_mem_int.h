@@ -27,11 +27,10 @@
 
 
 struct phys_mem_dev {
-        struct phys_mem_dev *next;  /* next listitem */
-        struct semaphore sem;     /* Mutual exclusion */
-        struct cdev cdev;
+	struct phys_mem_dev *next;  /* next listitem */
+	struct semaphore sem;     /* Mutual exclusion */
+	struct cdev cdev;
 };
-
 
 /**
  * The states of the Session-Statemachine
@@ -48,40 +47,31 @@ struct phys_mem_dev {
 /* Legal states */
 #define SESSION_NUM_STATES           5
 
-
-
 #define GET_STATE(session) ((session)->status.state)
 #define SET_STATE(session,value) set_state((session),(value))
 
 struct session_status {
-  unsigned int state;
+	unsigned int state;
 };
-
-
 
 /**
  * A session as described at the top of the file
  */
 struct phys_mem_session {
-         struct session_status status;
-         unsigned long long    session_id;
-         int vmas;                              /* active mappings */
-         struct phys_mem_dev *  device;
-         struct semaphore       sem;            /* Session Lock */
-         unsigned long          num_frame_stati;     /* The number of frame stati in status */
-         struct phys_mem_frame_status* frame_stati; /* An array with num_status items */
+	struct session_status status;
+	unsigned long long    session_id;
+	int vmas;                              /* active mappings */
+	struct phys_mem_dev *  device;
+	struct semaphore       sem;            /* Session Lock */
+	unsigned long          num_frame_stati;     /* The number of frame stati in status */
+	struct phys_mem_frame_status* frame_stati; /* An array with num_status items */
 };
 
 extern struct phys_mem_dev *phys_mem_devices;
 
-
-
 /*
  * Internal functions / global variables
  */
-
-
-
 
 /**
  * Free the page stati of a session. Also release any page reference found in there.
@@ -106,23 +96,25 @@ extern struct file_operations phys_mem_fops;
 extern struct kmem_cache *session_mem_cache;
 
 static __attribute__((unused)) char * SESSION_STATE_TXT[] = {
-    "SESSION_STATE_CLOSED",
-    "SESSION_STATE_OPEN",
-    "SESSION_STATE_CONFIGURING",
-    "SESSION_STATE_CONFIGURED",
-    "SESSION_STATE_MAPPED",
-    "- INVALID -"
+	"SESSION_STATE_CLOSED",
+	"SESSION_STATE_OPEN",
+	"SESSION_STATE_CONFIGURING",
+	"SESSION_STATE_CONFIGURED",
+	"SESSION_STATE_MAPPED",
+	"- INVALID -"
 };
 
-static inline void set_state(struct phys_mem_session * session,  unsigned int new_state){
-  if (new_state >= SESSION_NUM_STATES)
-    new_state = SESSION_STATE_INVALID;
+static inline void set_state(struct phys_mem_session * session,
+			     unsigned int new_state) {
+	if (new_state >= SESSION_NUM_STATES)
+		new_state = SESSION_STATE_INVALID;
 
 #if 0
-  printk(KERN_DEBUG "Session %llu: %s -> %s\n",session->session_id, SESSION_STATE_TXT[GET_STATE(session)], SESSION_STATE_TXT[new_state]) ;
+	pr_debug("Session %llu: %s -> %s\n",session->session_id,
+		  SESSION_STATE_TXT[GET_STATE(session)], SESSION_STATE_TXT[new_state]) ;
 #endif
 
-  session->status.state = new_state;
+	session->status.state = new_state;
 }
 
 #endif /* PHYS_MEM_INT_H_ */

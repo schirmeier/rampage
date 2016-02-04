@@ -34,7 +34,8 @@
 #include "page_claiming.h"           /* local definitions */
 
 /**
- * Free pages using memory-hotplug to increase the success rate of the buddy-claimer
+ * Free pages using memory-hotplug to increase
+ * the success rate of the buddy-claimer
  */
 
 /* Number of pages to offline/online at once
@@ -50,54 +51,61 @@
  * This function tries to unplug and replug a pageblock starting at
  * @address. Returns nonzero on error.
  */
-static int hotplug_bounce(u64 address) {
-  int ret;
+static int hotplug_bounce(u64 address)
+{
+	int ret;
 
-  ret = remove_memory(address, OFFLINE_AT_ONCE << PAGE_SHIFT);
-  if (!ret) {
-    ret = online_pages(address >> PAGE_SHIFT, OFFLINE_AT_ONCE);
-    if (ret) {
-      printk(KERN_EMERG "unclaim failed for pfn %08llx: ret %d\n",address >> PAGE_SHIFT,ret);
-    }
-    ret = 0; // avoid retries if onlining failed
-  }
-  return ret;
+	ret = remove_memory(address, OFFLINE_AT_ONCE << PAGE_SHIFT);
+	if (!ret) {
+		ret = online_pages(address >> PAGE_SHIFT, OFFLINE_AT_ONCE);
+		if (ret) {
+			pr_emerg("unclaim failed for pfn %08llx: ret %d\n",
+				 address >> PAGE_SHIFT, ret);
+		}
+		ret = 0; /* avoid retries if onlining failed */
+	}
+	return ret;
 }
 
 static u64 last_addr = -1;
 
-int free_pages_via_hotplug(struct page* requested_page, unsigned int allowed_sources, struct page** allocated_page, unsigned long* actual_source) {
-  if (allowed_sources & SOURCE_HOTPLUG) {
-    unsigned long pfn = page_to_pfn(requested_page);
-    u64 address = pfn << PAGE_SHIFT;
+int free_pages_via_hotplug(struct page* requested_page,
+			   unsigned int allowed_sources,
+			   struct page** allocated_page,
+			   unsigned long* actual_source)
+{
+	if (allowed_sources & SOURCE_HOTPLUG) {
+		unsigned long pfn = page_to_pfn(requested_page);
+		u64 address = pfn << PAGE_SHIFT;
 
 #if 0
-    /* Hack for testing - concentrate on just one 128MB block */
-    if (page_to_pfn(requested_page) < (0x8000000 >> PAGE_SHIFT))
-      return CLAIMED_TRY_NEXT;
-    if (page_to_pfn(requested_page) >= (0x10000000 >> PAGE_SHIFT))
-      return CLAIMED_TRY_NEXT;
+		/* Hack for testing - concentrate on just one 128MB block */
+		if (page_to_pfn(requested_page) < (0x8000000 >> PAGE_SHIFT))
+			return CLAIMED_TRY_NEXT;
+		if (page_to_pfn(requested_page) >= (0x10000000 >> PAGE_SHIFT))
+			return CLAIMED_TRY_NEXT;
 #endif
 
-    u64 realaddress = address & ~(((unsigned long)OFFLINE_AT_ONCE << PAGE_SHIFT) - 1UL);
+		u64 realaddress = address &
+			~(((unsigned long)OFFLINE_AT_ONCE << PAGE_SHIFT) - 1UL);
 
-    /* Avoid claiming the same area twice in a row */
-    if (realaddress != last_addr) {
-      last_addr = realaddress;
+		/* Avoid claiming the same area twice in a row */
+		if (realaddress != last_addr) {
+			last_addr = realaddress;
+	
+			/* we try again only when remove_memory(offline) failed */
+			if (hotplug_bounce(realaddress)) {
+				if (allowed_sources & SOURCE_SHAKING) {
+					/* Failed, shake page and try again */
+					shake_page(requested_page, 1);
+					hotplug_bounce(realaddress);
+					/* ignore return value, we only retry once */
+				}
+			}
+		}
+	}
 
-	  /* we try again only when remove_memory(offline) failed */
-      if (hotplug_bounce(realaddress)) {
-        if (allowed_sources & SOURCE_SHAKING) {
-          /* Failed, shake page and try again */
-          shake_page(requested_page, 1);
-          hotplug_bounce(realaddress);
-          // ignore return value, we only retry once
-        }
-      }
-    }
-  }
-
-  /* Always fall through to the next claimer */
-  return CLAIMED_TRY_NEXT;
+	/* Always fall through to the next claimer */
+	return CLAIMED_TRY_NEXT;
 }
 

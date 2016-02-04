@@ -290,56 +290,100 @@
 
 #include <linux/ioctl.h>
 
+/* 
+ * dynamic major by default. 
+ * 0 == dynamic allocation of the major number
+ */
+#define PHYS_MEM_MAJOR	0
 
-#define PHYS_MEM_MAJOR 0   /* dynamic major by default. 0 == dynamic allocation of the major  number */
+/* Use the 'Free Pages' Claimer (currently disabled) */
+#define SOURCE_FREE_PAGE	0x00001
 
+/* 
+ * Use the 'Free Buddy' Claimer: Use a free page
+ * associated with the buddy system
+ */
+#define SOURCE_FREE_BUDDY_PAGE	0x00002
 
-#define SOURCE_FREE_PAGE          0x00001       /* Use the 'Free Pages' Claimer (currently disabled) */
-#define SOURCE_FREE_BUDDY_PAGE    0x00002       /* Use the 'Free Buddy' Claimer: Use a free page associated with the buddy system */
+/* Use the 'wrest a page from the page cache'-claimer */
+#define SOURCE_PAGE_CACHE	0x00004
 
-#define SOURCE_PAGE_CACHE         0x00004      /* Use the  'wrest a page from the page cache'-claimer */
-#define SOURCE_ANONYMOUS          0x00008       /* Use the  'steal the page from a user process' claimer  */
+/* Use the 'steal the page from a user process' claimer */
+#define SOURCE_ANONYMOUS	0x00008
 
-#define SOURCE_ANY_PAGE           0x00010       /* Let the module decide */
+/* Let the module decide */
+#define SOURCE_ANY_PAGE		0x00010
 
-#define SOURCE_HW_POISON_ANON         0x00020       /* Use the HW_POISON claimer */
-#define SOURCE_HW_POISON_PAGE_CACHE          0x00040       /* Use the HW_POISON claimer */
-#define SOURCE_HW_POISON          (SOURCE_HW_POISON_ANON |  SOURCE_HW_POISON_PAGE_CACHE)
+/* Use the HW_POISON claimer */
+#define SOURCE_HW_POISON_ANON	0x00020
 
-#define SOURCE_HOTPLUG            0x00080       /* Offlining via memory hotplug */
-#define SOURCE_SHAKING            0x00100       /* Try shake_page in hotplug to free more pages */
+/* Use the HW_POISON claimer */
+#define SOURCE_HW_POISON_PAGE_CACHE	0x00040
 
-#define SOURCE_HOTPLUG_CLAIM      0x00200       /* Claiming via memory hotplug */
+#define SOURCE_HW_POISON \
+	(SOURCE_HW_POISON_ANON | SOURCE_HW_POISON_PAGE_CACHE)
 
-#define SOURCE_INVALID_PFN        0x80000       /* Not a source but the reply for invalid (too large) PFNs */
+/* Offlining via memory hotplug */
+#define SOURCE_HOTPLUG		0x00080
 
-#define SOURCE_ERROR_NOT_MAPPABLE        0x100000       /* Failed to insert Page in VMA */
+/* Try shake_page in hotplug to free more pages */
+#define SOURCE_SHAKING		0x00100
 
-#define SOURCE_MASK             0x000FFFFF
-#define SOURCE_ERROR_MASK       0xFFF00000
+/* Claiming via memory hotplug */
+#define SOURCE_HOTPLUG_CLAIM	0x00200
 
-#define PFN_IS_CLAIMED(phys_mem_frame_status) ((phys_mem_frame_status->actual_source & SOURCE_MASK) != 0)
+/* Not a source but the reply for invalid (too large) PFNs */
+#define SOURCE_INVALID_PFN	0x80000
+
+/* Failed to insert Page in VMA */
+#define SOURCE_ERROR_NOT_MAPPABLE	0x100000
+
+#define SOURCE_MASK		0x000FFFFF
+#define SOURCE_ERROR_MASK	0xFFF00000
+
+#define PFN_IS_CLAIMED(phys_mem_frame_status) \
+	((phys_mem_frame_status->actual_source & SOURCE_MASK) != 0)
 /**
  * A single request for a single pfn
  */
 struct phys_mem_frame_request {
-   unsigned   long requested_pfn;
-   unsigned  long allowed_sources; /* Bitmask of SOURCE_* */
+	unsigned   long requested_pfn;
+	unsigned  long allowed_sources; /* Bitmask of SOURCE_* */
 };
 
 /**
  * The status of a pfn
  */
 struct phys_mem_frame_status {
-   struct phys_mem_frame_request        request;
-   unsigned long long                        vma_offset_of_first_byte;      /* A pointer to the first byte of the frame, relative to the start of the VMA */
-   unsigned  long                              pfn;                    /* The pfn of the frame */
-   unsigned long long                                  allocation_cost_jiffies;       /* How long did it take to get a hold on this frame? Measured in jiffies*/
-   unsigned  long                       actual_source;                 /* A single item of SOURCE_* (optionally ORed with one SOURCE_ERROR_**/
-   struct page*                         page;                          /* The claimed (get_page) page describing this pfn OR NULL, when the page could not be claimed */
+	struct phys_mem_frame_request request;
+
+	/*
+	 * A pointer to the first byte of the frame,
+         * relative to the start of the VMA
+         */
+	unsigned long long vma_offset_of_first_byte;
+
+	/* The pfn of the frame */
+	unsigned  long pfn;
+
+        /*
+	 * How long did it take to get a hold on this frame?
+	 * Measured in jiffies
+	 */
+	unsigned long long allocation_cost_jiffies;
+
+	/*
+	 * A single item of SOURCE_* (optionally ORed with
+	 * one SOURCE_ERROR_*
+	 */
+	unsigned  long actual_source;
+
+	/*
+	 * The claimed (get_page) page describing this pfn
+	 * OR NULL, when the page could not be claimed
+	 */
+	struct page* page;
 };
-
-
 
 /*
  * The different configurable parameters
@@ -349,24 +393,38 @@ extern int phys_mem_devs;
 extern int phys_mem_order;
 extern int phys_mem_qset;
 
-
-
 /*
  * Ioctl definitions
  */
 
-
 #define IOCTL_REQUEST_VERSION   1
 
 struct phys_mem_request {
-  unsigned  long protocol_version; /* The protocol/struct version of this IOCTL call. Must be IOCTL_REQUEST_VERSION */
-  unsigned  long num_requests;     /* The number of frame requests */
-  struct phys_mem_frame_request   *req; /* A pointer to the array of requests. The array must contain at least num_requests items */
+	/*
+	 * The protocol/struct version of this IOCTL call.
+	 * Must be IOCTL_REQUEST_VERSION
+	 */
+	unsigned  long protocol_version;
+
+	/* The number of frame requests */
+	unsigned  long num_requests;
+
+	/* 
+	 * A pointer to the array of requests. The array
+	 * must contain at least num_requests items
+	 */
+	struct phys_mem_frame_request *req;
 };
 
-struct mark_page_poison{
-  unsigned  long protocol_version; /* The protocol/struct version of this IOCTL call. Must be IOCTL_REQUEST_VERSION */
-  unsigned  long bad_pfn;     /* The bad pfn */
+struct mark_page_poison {
+	/*
+	 * The protocol/struct version of this IOCTL call.
+	 * Must be IOCTL_REQUEST_VERSION
+	 */
+	unsigned  long protocol_version;
+
+	/* The bad pfn */
+	unsigned  long bad_pfn;
 };
 
 
@@ -376,9 +434,11 @@ struct mark_page_poison{
 /**
  * The 'Configure' IOCTL described above.
  */
-#define PHYS_MEM_IOC_REQUEST_PAGES    _IOW(PHYS_MEM_IOC_MAGIC, 0, struct phys_mem_request )
-#define PHYS_MEM_IOC_MARK_FRAME_BAD    _IOW(PHYS_MEM_IOC_MAGIC, 1, struct mark_page_poison )
+#define PHYS_MEM_IOC_REQUEST_PAGES \
+		_IOW(PHYS_MEM_IOC_MAGIC, 0, struct phys_mem_request )
 
+#define PHYS_MEM_IOC_MARK_FRAME_BAD \
+		_IOW(PHYS_MEM_IOC_MAGIC, 1, struct mark_page_poison )
 
 #define PHYS_MEM_IOC_MAXNR 1
 
