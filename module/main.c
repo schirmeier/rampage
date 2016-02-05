@@ -66,7 +66,7 @@ struct phys_mem_dev *phys_mem_devices; /* allocated in phys_mem_init */
 void phys_mem_cleanup(void);
 
 /* FIXME: Move to a header file */
-void unclaim_pages_via_hotplug(struct page* requested_page);
+void unclaim_pages_via_hotplug(struct page *requested_page);
 
 /* declare one cache pointer: use it for all session */
 struct kmem_cache *session_mem_cache;
@@ -79,14 +79,14 @@ struct kmem_cache *session_mem_cache;
  *
  *  The session lock must be held, when calling this function.
  */
-void free_page_stati(struct phys_mem_session* session)
+void free_page_stati(struct phys_mem_session *session)
 {
 	if (session->frame_stati) {
 		if (session->num_frame_stati) {
 			size_t i;
 
 			for (i = 0; i < session->num_frame_stati; i++) {
-				struct page* p = session->frame_stati[i].page;
+				struct page *p = session->frame_stati[i].page;
 				if (p) {
 					session->frame_stati[i].page = NULL;
 
@@ -149,7 +149,7 @@ int phys_mem_init(void)
 	 * Register your major, and accept a dynamic number.
 	 */
 	if (phys_mem_major)
-        	result = register_chrdev_region(dev, phys_mem_devs,
+		result = register_chrdev_region(dev, phys_mem_devs,
 						CHAR_DEVICE_NAME);
 	else {
 		result = alloc_chrdev_region(&dev, 0, phys_mem_devs,
@@ -192,7 +192,7 @@ int phys_mem_init(void)
 	}
 
 
-	PRINT_SIZE(void*);
+	PRINT_SIZE(void *);
 	PRINT_SIZE(short);
 	PRINT_SIZE(int);
 	PRINT_SIZE(long);

@@ -41,15 +41,15 @@
 /**
  * Try to claim page from a (user) process
  */
-int try_claim_page_from_user_process(struct page* requested_page,
+int try_claim_page_from_user_process(struct page *requested_page,
 				     unsigned int allowed_sources,
-                                     struct page** allocated_page,
-                                     unsigned long* actual_source)
+                                     struct page **allocated_page,
+                                     unsigned long *actual_source)
 {
 	int ret = CLAIMED_TRY_NEXT;
 
 	if (allowed_sources & SOURCE_ANONYMOUS) {
-		/* 
+		/*
 		 * FIXME: All attempts to do this reliable have failed -- even
 		 *        using the kernel functionalities inside hw-poison
 		 */

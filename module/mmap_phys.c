@@ -49,8 +49,8 @@
 
 void phys_mem_vma_open(struct vm_area_struct *vma)
 {
-	struct phys_mem_session* session =
-			(struct phys_mem_session*) vma->vm_private_data;
+	struct phys_mem_session *session =
+			(struct phys_mem_session *) vma->vm_private_data;
 
 	down(&session->sem);
 	if (0 == session->vmas)
@@ -62,8 +62,8 @@ void phys_mem_vma_open(struct vm_area_struct *vma)
 
 void phys_mem_vma_close(struct vm_area_struct *vma)
 {
-	struct phys_mem_session* session =
-			(struct phys_mem_session*) vma->vm_private_data;
+	struct phys_mem_session *session =
+			(struct phys_mem_session *) vma->vm_private_data;
 
 	down(&session->sem);
 	session->vmas--;
@@ -79,14 +79,14 @@ struct vm_operations_struct phys_mem_vm_ops = {
 	.close	=	phys_mem_vma_close,
 };
 
-int assemble_vma (struct phys_mem_session* session, struct vm_area_struct * vma)
+int assemble_vma (struct phys_mem_session *session, struct vm_area_struct *vma)
 {
 	unsigned long request_iterator;
 	int insert_status = 0;
 
 	for (request_iterator = 0;
 	     request_iterator < session->num_frame_stati; request_iterator++) {
-		struct phys_mem_frame_status* frame_status =
+		struct phys_mem_frame_status *frame_status =
 					&session->frame_stati[request_iterator];
 
 		if ( frame_status->page) {
@@ -103,7 +103,7 @@ int assemble_vma (struct phys_mem_session* session, struct vm_area_struct * vma)
 					PAGE_SIZE, vma->vm_page_prot);
 
 			if (unlikely(insert_status)) {
-				/* 
+				/*
 				 * Upps! We could not insert our page.
 				 * This should not really happen, so we
 				 * just print that and mark it in the
@@ -119,16 +119,16 @@ int assemble_vma (struct phys_mem_session* session, struct vm_area_struct * vma)
 	}
 
 out:
-	return  insert_status;
+	return insert_status;
 }
 
 
 int file_mmap_configured(struct file * filp, struct vm_area_struct * vma)
 {
-	struct phys_mem_session* session =
-			(struct phys_mem_session*) filp->private_data;
+	struct phys_mem_session *session =
+			(struct phys_mem_session *) filp->private_data;
 	int ret = 0;
-	unsigned long  max_size;
+	unsigned long max_size;
 
 	if (down_interruptible (&session->sem))
 		return -ERESTARTSYS;

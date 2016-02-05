@@ -36,15 +36,15 @@
 /**
  * Try to claim page from the page-cache
  */
-int try_claim_page_in_page_cache(struct page* requested_page,
+int try_claim_page_in_page_cache(struct page *requested_page,
 				 unsigned int allowed_sources,
-				 struct page** allocated_page,
-				 unsigned long* actual_source)
+				 struct page **allocated_page,
+				 unsigned long *actual_source)
 {
 	int ret = CLAIMED_TRY_NEXT;
 
 	if ( allowed_sources & SOURCE_PAGE_CACHE) {
-		/* FIXME Moved to HW-Poison*/
+		/* FIXME Moved to HW-Poison */
 	}
 	return ret;
 }

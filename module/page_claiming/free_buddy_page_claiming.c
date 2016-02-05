@@ -74,7 +74,7 @@ int do_try_claim_free_buddy_page(struct page *requested_page)
 	/* Failed rewrite attempt */
 	if (0 == page_count(compound_head(requested_page))
 	    && is_free_buddy_page(requested_page)) {
-		/* 
+		/*
 		 * Page is free and a buddy page
 		 * set_migratetype_isolate seems to set PageReserved
 		 * which would cause is_free_buddy_page() to fail
@@ -85,9 +85,9 @@ int do_try_claim_free_buddy_page(struct page *requested_page)
 		/* get, while page is still isolated */
 		locked_page = claim_free_buddy_page(requested_page);
 
-		/* 
-                 * Note: This code proceeds even if isolating failed.
-                 * The original never checked
+		/*
+		 * Note: This code proceeds even if isolating failed.
+		 * The original never checked
 		 * for the result and worked anyway.
 		 */
 		if (!smi)
@@ -114,10 +114,10 @@ int do_try_claim_free_buddy_page(struct page *requested_page)
  * Claim a given page from the buddy subsystem. This only works, if the page
  * registered within the buddy system and marked as free
  */
-int try_claim_free_buddy_page(struct page* requested_page,
+int try_claim_free_buddy_page(struct page *requested_page,
 			      unsigned int allowed_sources,
-                              struct page** allocated_page,
-			      unsigned long* actual_source)
+			      struct page **allocated_page,
+			      unsigned long *actual_source)
 {
 	int ret = CLAIMED_TRY_NEXT;
 
@@ -126,7 +126,7 @@ int try_claim_free_buddy_page(struct page* requested_page,
 		 * Isolate the page, so that it doesn't get reallocated if it
 		 * was free.
 		 */
-    		if (!do_try_claim_free_buddy_page(requested_page)) {
+		if (!do_try_claim_free_buddy_page(requested_page)) {
 			/* Claiming worked */
 			ret = CLAIMED_SUCCESSFULLY;
 #if 0
@@ -164,7 +164,7 @@ int try_claim_free_buddy_page(struct page* requested_page,
  */
 static inline struct page *claim_free_buddy_page(struct page * requested)
 {
-	struct page* ret = NULL;
+	struct page *ret = NULL;
 	unsigned int order = 0;
 	struct zone *zone;
 	int requested_page_count;

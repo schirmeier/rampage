@@ -104,12 +104,12 @@ try_claim_method try_claim_methods[] = {
 #endif
 
 #ifdef DEBUG_REQUEST
-static void dump_request(struct phys_mem_session* session,
-			 const struct phys_mem_request* request);
+static void dump_request(struct phys_mem_session *session,
+			 const struct phys_mem_request *request);
 #endif
 
-int handle_mark_page_poison(struct phys_mem_session* session,
-			    const struct mark_page_poison* request)
+int handle_mark_page_poison(struct phys_mem_session *session,
+			    const struct mark_page_poison *request)
 {
 	int ret = 0;
 
@@ -158,8 +158,8 @@ out:
 	return ret;
 }
 
-int handle_request_pages(struct phys_mem_session* session,
-			 const struct phys_mem_request* request)
+int handle_request_pages(struct phys_mem_session *session,
+			 const struct phys_mem_request *request)
 {
 	int ret = 0;
 	unsigned long i;
@@ -186,7 +186,7 @@ int handle_request_pages(struct phys_mem_session* session,
 				  "IOCTL should never appear in state %i\n",
 				  session->session_id, GET_STATE(session));
 		else
-			pr_warn("Session %llu: The state of the session is " 
+			pr_warn("Session %llu: The state of the session is "
 				"invalid: The Request  IOCTL should never "
 				"appear in state %i\n",
 				session->session_id, GET_STATE(session));
@@ -219,10 +219,10 @@ int handle_request_pages(struct phys_mem_session* session,
 			SESSION_FRAME_STATI_SIZE(request->num_requests));
 	session->num_frame_stati = request->num_requests;
 
-        /* Handle all requests */
+	/* Handle all requests */
 
-        /*
-         * The VMA maps all successfully mapped pages in the same order as 
+	/*
+	 * The VMA maps all successfully mapped pages in the same order as
 	 * they appear here.
 	 * To make the users live easier, the relative offset of the frames
 	 * gets returned in vma_offset_of_first_byte.
@@ -258,7 +258,7 @@ int handle_request_pages(struct phys_mem_session* session,
 				  current_pfn_status->request.requested_pfn, i);
 #endif
 		} else {
-			struct page* requested_page = pfn_to_page(
+			struct page *requested_page = pfn_to_page(
 				current_pfn_status->request.requested_pfn);
 			try_claim_method claim_method = NULL;
 			int claim_method_idx = 0;
@@ -277,7 +277,7 @@ int handle_request_pages(struct phys_mem_session* session,
 
 			/*
 			 * the claim-method can return a different page,
-                         * but the default page is the requested page
+			 * but the default page is the requested page
 			 */
 			allocated_page = requested_page;
 
@@ -318,7 +318,7 @@ int handle_request_pages(struct phys_mem_session* session,
 					 page_count(requested_page));
 #endif
 			} else {
-				/* Nothing to do*/
+				/* Nothing to do */
 				current_pfn_status->page = NULL;
 				current_pfn_status->pfn = 0;
 				current_pfn_status->vma_offset_of_first_byte = 0;
@@ -361,8 +361,8 @@ out_to_open:
 
 #ifdef DEBUG_REQUEST
 
-static void dump_request(struct phys_mem_session* session,
-			 const struct phys_mem_request* request)
+static void dump_request(struct phys_mem_session *session,
+			 const struct phys_mem_request *request)
 {
 	long int index = 0;
 
@@ -387,7 +387,7 @@ static void dump_request(struct phys_mem_session* session,
 				 session->session_id, pfn, allowed_sources);
 #endif
 		}
-	else 
+	else
 		pr_notice("Session %llu: Dumping %lu requested pages: No Data\n",
 			  session->session_id, request->num_requests);
 

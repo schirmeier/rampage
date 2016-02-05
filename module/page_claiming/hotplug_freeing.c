@@ -69,10 +69,10 @@ static int hotplug_bounce(u64 address)
 
 static u64 last_addr = -1;
 
-int free_pages_via_hotplug(struct page* requested_page,
+int free_pages_via_hotplug(struct page *requested_page,
 			   unsigned int allowed_sources,
-			   struct page** allocated_page,
-			   unsigned long* actual_source)
+			   struct page **allocated_page,
+			   unsigned long *actual_source)
 {
 	if (allowed_sources & SOURCE_HOTPLUG) {
 		unsigned long pfn = page_to_pfn(requested_page);
@@ -92,7 +92,7 @@ int free_pages_via_hotplug(struct page* requested_page,
 		/* Avoid claiming the same area twice in a row */
 		if (realaddress != last_addr) {
 			last_addr = realaddress;
-	
+
 			/* we try again only when remove_memory(offline) failed */
 			if (hotplug_bounce(realaddress)) {
 				if (allowed_sources & SOURCE_SHAKING) {

@@ -61,7 +61,7 @@ atomic64_t session_counter = ATOMIC_INIT(0);
 int phys_mem_open(struct inode *inode, struct file *filp)
 {
 	struct phys_mem_dev *dev; /* device information */
-	struct phys_mem_session* session; /* the to-be created session */
+	struct phys_mem_session *session; /* the to-be created session */
 
 	/* Find the device */
 	dev = container_of(inode->i_cdev, struct phys_mem_dev, cdev);
@@ -89,9 +89,9 @@ int phys_mem_open(struct inode *inode, struct file *filp)
 
 int phys_mem_release(struct inode *inode, struct file *filp)
 {
-	struct phys_mem_session* session; /* the to-be destroyed session */
+	struct phys_mem_session *session; /* the to-be destroyed session */
 
-	session = (struct phys_mem_session*) filp->private_data;
+	session = (struct phys_mem_session *) filp->private_data;
 
 	if (down_interruptible(&session->sem))
 		return -ERESTARTSYS;
@@ -105,7 +105,7 @@ int phys_mem_release(struct inode *inode, struct file *filp)
 	while (GET_STATE(session) != SESSION_STATE_CLOSED) {
 		switch (GET_STATE(session)) {
 		case SESSION_STATE_OPEN:
-			/* 
+			/*
 			 * Release all resources aquired in open (except the
 			 * session and the lock)
 			 */
@@ -162,8 +162,8 @@ ssize_t file_read_configured(struct file *filp, char __user *buf,
 			     size_t count, loff_t *f_pos)
 {
 	ssize_t retval = 0, max_size = 0;
-	struct phys_mem_session* session =
-				(struct phys_mem_session*) filp->private_data;
+	struct phys_mem_session *session =
+				(struct phys_mem_session *) filp->private_data;
 
 	if (down_interruptible(&session->sem))
 		return -ERESTARTSYS;
@@ -183,7 +183,7 @@ ssize_t file_read_configured(struct file *filp, char __user *buf,
 	if (*f_pos + count > max_size)
 		count = max_size - *f_pos;
 
-	if (copy_to_user(buf, ((void*)((unsigned long)session->frame_stati)
+	if (copy_to_user(buf, ((void *)((unsigned long)session->frame_stati)
 				 + *f_pos), count)) {
 		retval = -EFAULT;
 		goto nothing;
@@ -218,13 +218,13 @@ nothing:
 long file_ioctl_open(struct file *filp, unsigned int cmd, unsigned long arg)
 {
 	int err = 0, ret = 0;
-	struct phys_mem_session* session =
-				(struct phys_mem_session*) filp->private_data;
+	struct phys_mem_session *session =
+				(struct phys_mem_session *) filp->private_data;
 
 #if 0
 	pr_debug("Session %llu: file_ioctl_open: %x Type: %c (expect %c), Number %i Arg: %p\n",
 		 session->session_id, cmd, _IOC_TYPE(cmd),
-		 PHYS_MEM_IOC_MAGIC, _IOC_NR(cmd), (void*) arg);
+		 PHYS_MEM_IOC_MAGIC, _IOC_NR(cmd), (void *) arg);
 #endif
 
 	/* don't even decode wrong cmds: better returning  ENOTTY than EFAULT */
@@ -263,10 +263,10 @@ long file_ioctl_open(struct file *filp, unsigned int cmd, unsigned long arg)
 				ret = -EFAULT;
 			} else {
 #if 0
-                		pr_debug("Session %llu: request: Ver %lu, %lu items @%p\n",
-					  session->session_id,
-					  request.protocol_version,
-					  request.num_requests, request.req);
+				pr_debug("Session %llu: request: Ver %lu, %lu items @%p\n",
+						session->session_id,
+						request.protocol_version,
+						request.num_requests, request.req);
 #endif
 				if (request.protocol_version
 				    != IOCTL_REQUEST_VERSION)
@@ -319,8 +319,8 @@ long file_ioctl_open(struct file *filp, unsigned int cmd, unsigned long arg)
  */
 loff_t file_llseek_configured(struct file *filp, loff_t off, int whence)
 {
-	struct phys_mem_session* session =
-				(struct phys_mem_session*) filp->private_data;
+	struct phys_mem_session *session =
+				(struct phys_mem_session *) filp->private_data;
 	size_t max_size = 0;
 	long newpos = 0;
 	long error = 0;
@@ -447,7 +447,7 @@ ssize_t dispatch_read(struct file *filp, char __user *buf, size_t count,
 {
 	struct phys_mem_session * session = filp->private_data;
 	ssize_t(*fn) (struct file *, char __user *, size_t, loff_t *);
-	
+
 	if (session->status.state >= SESSION_NUM_STATES) {
 		pr_err("Reading with an invalid session state of %i!\n",
 			session->status.state);

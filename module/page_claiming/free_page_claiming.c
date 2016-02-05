@@ -50,8 +50,8 @@
 static inline int free_pages_check__just_test(struct page *page)
 {
 	if (unlikely(page_mapcount(page) |(page->mapping != NULL) |
-	    (atomic_read(&page->_count) != 0) |
-	    (page->flags & PAGE_FLAGS_CHECK_AT_FREE)))
+		(atomic_read(&page->_count) != 0) |
+		(page->flags & PAGE_FLAGS_CHECK_AT_FREE)))
 		return 1;
 	return 0;
 }
@@ -76,16 +76,16 @@ static inline int free_pages_check__just_test(struct page *page)
          * that may make page_freeze_refs()/page_unfreeze_refs() mismatch.
  *
  */
-inline int try_claim_free_page(struct page* requested_page,
+inline int try_claim_free_page(struct page *requested_page,
 			       unsigned int allowed_sources,
-                               struct page** allocated_page,
-                               unsigned long* actual_source)
+			       struct page **allocated_page,
+			       unsigned long *actual_source)
 {
 	int ret = CLAIMED_TRY_NEXT;
 	int enabled = 0;
 
 	if (enabled && (allowed_sources & SOURCE_FREE_PAGE)) {
-		struct page* compound_head_page;
+		struct page *compound_head_page;
 
 		compound_head_page = compound_head(requested_page);
 
@@ -96,9 +96,9 @@ inline int try_claim_free_page(struct page* requested_page,
 		 * Additionally this test is propably not correct anyway.
 		 */
 		if (compound_head_page == requested_page
-		    && !free_pages_check__just_test(requested_page) == 0
-		    && requested_page->lru.next == NULL
-	       	    && requested_page->lru.prev == NULL) {
+			&& !free_pages_check__just_test(requested_page) == 0
+			&& requested_page->lru.next == NULL
+			&& requested_page->lru.prev == NULL) {
 			int locked_page_count_before, locked_page_count_after;
 
 			locked_page_count_before = page_count(requested_page);

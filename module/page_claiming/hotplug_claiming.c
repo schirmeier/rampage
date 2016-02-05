@@ -48,7 +48,7 @@ static u64 start_address = -1;
 static u64 prev_start_address = -1;
 static u64 prev_failed_claim = -1;
 
-void unclaim_pages_via_hotplug(struct page* requested_page)
+void unclaim_pages_via_hotplug(struct page *requested_page)
 {
 	unsigned long pfn = page_to_pfn(requested_page);
 	u64 address = pfn << PAGE_SHIFT;
@@ -87,10 +87,10 @@ void unclaim_pages_via_hotplug(struct page* requested_page)
 	}
 }
 
-int try_claim_pages_via_hotplug(struct page* requested_page,
+int try_claim_pages_via_hotplug(struct page *requested_page,
 				unsigned int allowed_sources,
-				struct page** allocated_page,
-				unsigned long* actual_source)
+				struct page **allocated_page,
+				unsigned long *actual_source)
 {
 	if (allowed_sources & SOURCE_HOTPLUG_CLAIM) {
 		unsigned long pfn = page_to_pfn(requested_page);
@@ -147,6 +147,6 @@ int try_claim_pages_via_hotplug(struct page* requested_page,
 	}
 
 	/* Always fall through to the next claimer */
- 	return CLAIMED_TRY_NEXT;
+	return CLAIMED_TRY_NEXT;
 }
 

@@ -64,7 +64,7 @@ struct phys_mem_session {
 	struct phys_mem_dev *  device;
 	struct semaphore       sem;            /* Session Lock */
 	unsigned long          num_frame_stati;     /* The number of frame stati in status */
-	struct phys_mem_frame_status* frame_stati; /* An array with num_status items */
+	struct phys_mem_frame_status *frame_stati; /* An array with num_status items */
 };
 
 extern struct phys_mem_dev *phys_mem_devices;
@@ -78,7 +78,7 @@ extern struct phys_mem_dev *phys_mem_devices;
  *
  * The function must be called with the session lock held!
  */
-void free_page_stati(struct phys_mem_session* session);
+void free_page_stati(struct phys_mem_session *session);
 
 /**
  * The size of a number of frame-stati

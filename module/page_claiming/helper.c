@@ -21,7 +21,8 @@
 
 #include <linux/mm.h>
 
-void my_dump_page(struct page* page, char* msg){
+void my_dump_page(struct page *page, char *msg)
+{
 #if 0
 	if (!msg)
 		msg="";

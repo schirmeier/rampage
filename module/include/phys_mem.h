@@ -277,7 +277,7 @@
  * Acknowledgements:
  * =======================
  *
- * This code has been written by taking  example code from the
+ * This code has been written by taking example code from the
  * LDD-book [1] as a cure for the "I do not like empty source-files"-symptom.
  * Alessandro & Jonathan: Thank you!
  *
@@ -290,8 +290,8 @@
 
 #include <linux/ioctl.h>
 
-/* 
- * dynamic major by default. 
+/*
+ * dynamic major by default.
  * 0 == dynamic allocation of the major number
  */
 #define PHYS_MEM_MAJOR	0
@@ -299,7 +299,7 @@
 /* Use the 'Free Pages' Claimer (currently disabled) */
 #define SOURCE_FREE_PAGE	0x00001
 
-/* 
+/*
  * Use the 'Free Buddy' Claimer: Use a free page
  * associated with the buddy system
  */
@@ -359,14 +359,14 @@ struct phys_mem_frame_status {
 
 	/*
 	 * A pointer to the first byte of the frame,
-         * relative to the start of the VMA
-         */
+	 * relative to the start of the VMA
+	 */
 	unsigned long long vma_offset_of_first_byte;
 
 	/* The pfn of the frame */
 	unsigned  long pfn;
 
-        /*
+	/*
 	 * How long did it take to get a hold on this frame?
 	 * Measured in jiffies
 	 */
@@ -382,7 +382,7 @@ struct phys_mem_frame_status {
 	 * The claimed (get_page) page describing this pfn
 	 * OR NULL, when the page could not be claimed
 	 */
-	struct page* page;
+	struct page *page;
 };
 
 /*
@@ -409,7 +409,7 @@ struct phys_mem_request {
 	/* The number of frame requests */
 	unsigned  long num_requests;
 
-	/* 
+	/*
 	 * A pointer to the array of requests. The array
 	 * must contain at least num_requests items
 	 */
