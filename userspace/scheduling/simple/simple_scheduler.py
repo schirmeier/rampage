@@ -67,8 +67,11 @@ class SimpleScheduler(object):
         
     def name(self):
         return "Simple Scheduler"
-    
-    def run(self, first_frame,last_frame, allowed_sources):
+    '''
+    the parameters 'pfns_at_once', 'time_limit', and 'full_time' is useless here, just to keep the
+    same style with other schedulers.
+    '''
+    def run(self, first_frame,last_frame, allowed_sources, pfns_at_once=0, time_limit=0, full_time=0):
         for pfn in xrange(first_frame, last_frame):
             frame_status = self._pfn_status(pfn)
             
@@ -106,7 +109,7 @@ class SimpleScheduler(object):
                 with self.physmem_device.mmap(physmem.PAGE_SIZE) as map:
                     # It is better to handle bad frames after they are unmapped
                     for test in self.frame_tests:
-                        is_ok = (test.test_single(map,0) == Null)
+                        is_ok = (test.test_single(map, 0, frame.pfn*4096) == None)
     
                 if is_ok:
                     frame_status.has_errors = 0
