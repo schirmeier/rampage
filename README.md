@@ -14,24 +14,22 @@ These steps are required to setup and run RAMpage:
   but with some luck (and if the kernel memory management hasn't
   changed too much) this should be portable to newer kernel versions
   with little to no effort.  The kernel should be configured by moving
-  /config-rampage-final-2.6.35 to $kernelsource/.config and running ```make
-  oldconfig```.  (RAMpage only works with an x86-64 kernel at the moment.)
+  /config-rampage-final-2.6.35 to $kernelsource/.config and running
+  ```make oldconfig```.  (RAMpage only works with an x86-64 kernel at the moment.)
 
 * After having booted the patched kernel, you need to build and insert
   the kernel module by entering module/ and running ```./rebuild.sh```.
 
 * Then you need to prepare the userspace memory tester C extensions:
 
-  ```
-cd rampage/userspace/tester  
-make && cp build/*/*.so .  
-cd ..
-  ```
+        cd rampage/userspace/tester  
+        make && cp build/*/*.so .  
+        cd ..
 
 * RAMpage should now be ready to run, for example:
-  ```
-./main.py -a blockwise --run-time 86400 --retest-time 86400 -4 -t mt86* -f 5120 --enable-p4-claimers=buddy,hotplug-claim,shaking
-  ```
+
+        ./main.py -a blockwise --run-time 86400 --retest-time 86400 -4 -t mt86* -f 5120 \
+          --enable-p4-claimers=buddy,hotplug-claim,shaking
 
   ```./main.py --help``` gives an explanation for the parameters and switches.
 
